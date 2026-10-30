@@ -1,28 +1,31 @@
 {
   "name": "ramadan-planner",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "build:quran": "node scripts/build-quran.mjs",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "start": "npx serve out",
+    "lint": "next lint"
   },
   "dependencies": {
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource/amiri-quran": "^5.3.0",
+    "@fontsource/hind-siliguri": "^5.3.0",
     "adhan": "^4.4.3",
+    "dexie": "^4.4.7",
     "next": "^14.2.25",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
-    "eslint-config-next": "16.1.6",
-    "tailwindcss": "^4",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.35",
+    "quran-json": "^3.1.2",
     "typescript": "^5"
   }
 }

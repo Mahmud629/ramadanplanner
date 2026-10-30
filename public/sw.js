@@ -1,53 +1,68 @@
-const CACHE_NAME = "ramadan-planner-v1";
-const CORE_ASSETS = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png"];
+// Ramadan Planner service worker: works offline after the first visit.
+const CACHE = "ramadan-planner-v2";
+const CORE = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).then(() => self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : Promise.resolve())))
-    ).then(() => self.clients.claim())
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
   );
 });
 
-self.addEventListener("fetch", (event) => {
-  const url = new URL(event.request.url);
-
-  // Cache-first for dua images
-  if (url.pathname.startsWith("/dua/")) {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        if (cached) return cached;
-        return fetch(event.request).then((res) => {
+function cacheFirst(request) {
+  return caches.match(request).then(
+    (hit) =>
+      hit ||
+      fetch(request).then((res) => {
+        if (res.ok) {
           const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return res;
-        });
-      })
-    );
-    return;
-  }
+          caches.open(CACHE).then((c) => c.put(request, copy));
+        }
+        return res;
+      }),
+  );
+}
 
-  // Network-first for html, cache-first for others
-  if (event.request.mode === "navigate") {
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
+
+  // Pages: network first so updates arrive, fall back to the cached app shell offline.
+  if (req.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
+      fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("/", copy));
+          caches.open(CACHE).then((c) => c.put("/", copy));
           return res;
         })
-        .catch(() => caches.match("/"))
+        .catch(() => caches.match("/")),
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+  // Same-origin static files (scripts, styles, fonts, images): cache first. Next.js gives them hashed names.
+  if (url.origin === self.location.origin) {
+    event.respondWith(cacheFirst(req));
+    return;
+  }
+
+  // Quran recitation audio: keep what was played so it works offline next time.
+  if (url.hostname === "everyayah.com") {
+    event.respondWith(cacheFirst(req));
+  }
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window" }).then((list) => (list.length ? list[0].focus() : self.clients.openWindow("/"))),
   );
 });

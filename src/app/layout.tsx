@@ -1,48 +1,36 @@
 import type { Metadata, Viewport } from "next";
-import Script from "next/script";
-import { Inter } from "next/font/google";
+import "@fontsource/hind-siliguri/bengali-400.css";
+import "@fontsource/hind-siliguri/bengali-500.css";
+import "@fontsource/hind-siliguri/bengali-600.css";
+import "@fontsource/hind-siliguri/latin-400.css";
+import "@fontsource/hind-siliguri/latin-500.css";
+import "@fontsource/hind-siliguri/latin-600.css";
+import "@fontsource/amiri-quran/arabic-400.css";
+import "@fontsource-variable/fraunces/full.css";
 import "./globals.css";
 import RegisterSW from "@/components/RegisterSW";
 
-const inter = Inter({ subsets: ["latin"] });
-
-// Put your Measurement ID in .env.local as NEXT_PUBLIC_GA_ID="G-XXXXXXX"
-const GA_ID = "G-M8HF0SPKZK";
-
 export const metadata: Metadata = {
   title: "Ramadan Planner",
-  description: "Offline Ramadan planner",
+  description: "Track your fasts, prayers and Quran, learn a verse, a dua and a lesson every day of Ramadan. Works offline.",
   manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "Ramadan", statusBarStyle: "black-translucent" },
+  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0a0f1a",
+  themeColor: "#0b2523",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="bn" data-theme="night" suppressHydrationWarning>
+      <body>
         {children}
         <RegisterSW />
-
-        {/* Google Analytics (GA4) */}
-        {GA_ID ? (
-          <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-              strategy="afterInteractive"
-            />
-            <Script id="ga4" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${GA_ID}', { anonymize_ip: true });
-              `}
-            </Script>
-          </>
-        ) : null}
       </body>
     </html>
   );
