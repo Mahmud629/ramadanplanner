@@ -135,6 +135,15 @@ export function Icon({ name, size = 22 }: { name: string; size?: number }) {
   }
 }
 
+/** A light haptic tick on supported phones. */
+export function tap(ms = 8) {
+  try {
+    if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(ms);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function Check({ on }: { on: boolean }) {
   return <span className={`dot-check${on ? " on" : ""}`}>{on ? <Icon name="check" size={14} /> : null}</span>;
 }

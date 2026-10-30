@@ -11,6 +11,7 @@ import LearnView from "./LearnView";
 import MoreView, { LocationPicker } from "./MoreView";
 import { Icon, Toast } from "./ui";
 import { dayIndexFor, longDate } from "@/lib/ramadan";
+import "@/lib/install";
 
 const GA_ID = "G-M8HF0SPKZK";
 
@@ -119,7 +120,7 @@ function Shell() {
         ) : null}
 
         <main>
-          {tab === "today" && <TodayView now={now} viewDate={viewDate} onBackToToday={() => setViewDate(null)} onOpenLesson={() => setTab("learn")} />}
+          {tab === "today" && <TodayView now={now} viewDate={viewDate} onBackToToday={() => setViewDate(null)} onOpenLearn={() => setTab("learn")} />}
           {tab === "journey" && <JourneyView now={now} onOpenDay={openDay} />}
           {tab === "quran" && <QuranView now={now} />}
           {tab === "learn" && <LearnView key={learnDay} now={now} day={learnDay} />}

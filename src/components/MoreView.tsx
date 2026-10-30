@@ -11,6 +11,7 @@ import { db, type DayEntry, type Method, type Settings } from "@/lib/db";
 import { QURAN_SOURCE } from "@/content";
 import Moon from "./Moon";
 import { Icon, SubHead } from "./ui";
+import { useInstall } from "@/lib/install";
 
 type Sub = "tasbih" | "zakat" | "fitra" | "qada" | "recap" | "settings" | "backup" | "about";
 
@@ -56,8 +57,30 @@ export default function MoreView({ now, initial }: { now: Date; initial?: Sub | 
   return (
     <div className="stack-lg" style={{ paddingTop: 16 }}>
       <h1 style={{ fontSize: "1.4rem" }}>{t("tools")}</h1>
+      <InstallCard />
       <List list={items} />
       <List list={items2} />
+    </div>
+  );
+}
+
+function InstallCard() {
+  const { t } = useStore();
+  const inst = useInstall();
+  if (inst.installed || (!inst.canPrompt && !inst.ios)) return null;
+  return (
+    <div className="dua-mini">
+      <div className="between">
+        <div style={{ minWidth: 0 }}>
+          <h2>{t("install")}</h2>
+          <p className="small muted">{inst.ios ? t("installIos") : t("installHint")}</p>
+        </div>
+        {inst.canPrompt ? (
+          <button className="btn primary small" onClick={inst.prompt}>
+            {t("installBtn")}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
