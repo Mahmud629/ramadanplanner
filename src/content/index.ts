@@ -71,5 +71,11 @@ export function duaAudio(d: Dua) {
   return d.parts.map((p) => ({ s: p.s, a: p.a }));
 }
 
+const offsets = (Q as unknown as { offsets: number[] }).offsets;
+/** Global ayah number, 1–6236. */
+export function ayahGlobal(s: number, a: number) {
+  return offsets[s - 1] + a;
+}
+
 export const MEMORISE = Q.memorise as { id: string; s: number; from: number; to: number }[];
 export const QURAN_SOURCE = Q.source;

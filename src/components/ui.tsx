@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
+import { ayahGlobal } from "@/content";
 
 export function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const p = { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, "aria-hidden": true };
@@ -123,6 +124,24 @@ export function Icon({ name, size = 22 }: { name: string; size?: number }) {
           <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
         </svg>
       );
+    case "trash":
+      return (
+        <svg {...p}>
+          <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg {...p}>
+          <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.6 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z" />
+        </svg>
+      );
+    case "bell":
+      return (
+        <svg {...p}>
+          <path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15l1.5-2ZM10 20.5h4" />
+        </svg>
+      );
     case "info":
       return (
         <svg {...p}>
@@ -168,57 +187,94 @@ export function Chip({ on, onToggle, children, disabled, tone }: { on: boolean; 
 
 /* ---------- audio: one shared player so recitations never overlap ---------- */
 let sharedAudio: HTMLAudioElement | null = null;
-const listeners = new Set<(id: string | null) => void>();
-let currentId: string | null = null;
-function setCurrent(id: string | null) {
-  currentId = id;
-  listeners.forEach((l) => l(id));
+type State = { id: string | null; status: "idle" | "loading" | "playing" | "error" };
+let state: State = { id: null, status: "idle" };
+const listeners = new Set<(s: State) => void>();
+function setState(next: State) {
+  state = next;
+  listeners.forEach((l) => l(next));
 }
 
-export function ayahAudioUrl(s: number, a: number) {
-  return `https://everyayah.com/data/Alafasy_128kbps/${String(s).padStart(3, "0")}${String(a).padStart(3, "0")}.mp3`;
+/** Mishary Alafasy, one file per ayah, from three independent servers (tried in order). */
+export function ayahAudioUrl(s: number, a: number): string[] {
+  const sss = String(s).padStart(3, "0");
+  const aaa = String(a).padStart(3, "0");
+  return [
+    `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${ayahGlobal(s, a)}.mp3`,
+    `https://everyayah.com/data/Alafasy_128kbps/${sss}${aaa}.mp3`,
+    `https://verses.quran.foundation/Alafasy/mp3/${sss}${aaa}.mp3`,
+  ];
 }
 
-export function AudioButton({ id, urls, label }: { id: string; urls: string[]; label?: string }) {
+export function AudioButton({ id, urls, label }: { id: string; urls: string[][]; label?: string }) {
   const { t } = useStore();
-  const [playing, setPlaying] = useState(false);
-  const idx = useRef(0);
+  const [st, setSt] = useState<State>(state);
 
   useEffect(() => {
-    const l = (cur: string | null) => setPlaying(cur === id);
-    listeners.add(l);
+    listeners.add(setSt);
     return () => {
-      listeners.delete(l);
+      listeners.delete(setSt);
     };
-  }, [id]);
+  }, []);
+
+  const mine = st.id === id;
+  const status = mine ? st.status : "idle";
 
   const toggle = () => {
-    if (!sharedAudio) sharedAudio = new Audio();
+    if (!sharedAudio) {
+      sharedAudio = new Audio();
+      sharedAudio.preload = "auto";
+    }
     const a = sharedAudio;
-    if (playing) {
+    if (status === "playing" || status === "loading") {
       a.pause();
-      setCurrent(null);
+      setState({ id: null, status: "idle" });
       return;
     }
-    idx.current = 0;
-    a.onended = () => {
-      idx.current += 1;
-      if (idx.current < urls.length && currentId === id) {
-        a.src = urls[idx.current];
-        a.play().catch(() => setCurrent(null));
-      } else setCurrent(null);
+    let ayah = 0;
+    let source = 0;
+    const load = () => {
+      a.src = urls[ayah][source];
+      a.load();
+      a.play().catch((err: DOMException) => {
+        // a blocked play (e.g. iOS without a tap) is not a network error: stop quietly
+        if (err?.name === "NotAllowedError" && state.id === id) setState({ id: null, status: "idle" });
+      });
     };
-    a.onerror = () => setCurrent(null);
-    a.src = urls[0];
-    setCurrent(id);
-    a.play().catch(() => setCurrent(null));
+    a.onplaying = () => state.id === id && setState({ id, status: "playing" });
+    a.onwaiting = () => state.id === id && setState({ id, status: "loading" });
+    a.onerror = () => {
+      if (state.id !== id) return;
+      source += 1;
+      if (source < urls[ayah].length) load();
+      else setState({ id, status: "error" });
+    };
+    a.onended = () => {
+      if (state.id !== id) return;
+      ayah += 1;
+      if (ayah < urls.length) {
+        source = 0;
+        load();
+      } else setState({ id: null, status: "idle" });
+    };
+    setState({ id, status: "loading" });
+    load();
   };
 
+  const icon = status === "playing" || status === "loading" ? "pause" : "play";
+  const text = label && status === "idle" ? label : status === "loading" ? t("audioLoading") : status === "playing" ? t("pause") : status === "error" ? t("retry") : label ?? t("play");
   return (
-    <button className="btn small" onClick={toggle} aria-label={playing ? t("pause") : t("play")}>
-      <Icon name={playing ? "pause" : "play"} size={16} />
-      {label ?? (playing ? t("pause") : t("play"))}
-    </button>
+    <span className="stack" style={{ gap: 4, alignItems: "flex-end" }}>
+      <button className="btn small" onClick={toggle} aria-label={text} aria-busy={status === "loading"}>
+        <Icon name={icon} size={16} />
+        {text}
+      </button>
+      {status === "error" ? (
+        <span className="tiny" style={{ color: "var(--rose)", textAlign: "right" }} role="alert">
+          {t("audioError")}
+        </span>
+      ) : null}
+    </span>
   );
 }
 

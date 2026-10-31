@@ -42,7 +42,14 @@ export function useRamadan(now: Date) {
   // the sky turns at Maghrib and at sunrise
   const isNight = now >= times.maghrib || now < times.sunrise;
 
-  return { today, tz: loc.tz, info, times, sehri, iftar, next, nextPrayer, currentPrayer, isNight };
+  // Nights of the last ten: night N runs from Maghrib before day N until Fajr of day N.
+  let night: number | null = null;
+  const d = info.dayIndex;
+  if (d >= 20 && d <= 29 && now >= times.maghrib) night = d + 1;
+  else if (d >= 21 && d <= 30 && now < times.fajr) night = d;
+  const nextFajr = now < times.fajr ? times.fajr : tomorrowTimes.fajr;
+
+  return { today, tz: loc.tz, info, times, sehri, iftar, next, nextPrayer, currentPrayer, isNight, night, nextFajr };
 }
 
 export function countdown(ms: number) {

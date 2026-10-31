@@ -8,7 +8,9 @@ import TodayView from "./TodayView";
 import JourneyView from "./JourneyView";
 import QuranView from "./QuranView";
 import LearnView from "./LearnView";
-import MoreView, { LocationPicker } from "./MoreView";
+import MoreView, { LocationPicker, type Sub } from "./MoreView";
+import { IftarMoment } from "./Moments";
+import { playChime } from "@/lib/chime";
 import { Icon, Toast } from "./ui";
 import { dayIndexFor, longDate } from "@/lib/ramadan";
 import "@/lib/install";
@@ -33,7 +35,7 @@ function Shell() {
   const [viewDate, setViewDate] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [moreKey, setMoreKey] = useState(0);
-  const [moreInitial, setMoreInitial] = useState<"settings" | null>(null);
+  const [moreInitial, setMoreInitial] = useState<Sub | null>(null);
   const lang = settings.lang;
 
   // theme: follow the sun by default — night from Maghrib to sunrise
@@ -58,6 +60,7 @@ function Shell() {
       if (fired.current.has(key)) return;
       fired.current.add(key);
       setToast(text);
+      playChime();
       if ("Notification" in window && Notification.permission === "granted") {
         navigator.serviceWorker?.getRegistration().then((reg) => {
           if (reg) reg.showNotification(t("appName"), { body: text, icon: "/icon-192.png", tag: key });
@@ -79,6 +82,11 @@ function Shell() {
     },
     [rd.today],
   );
+
+  // The iftar moment: shown once, during the first 30 minutes after iftar.
+  const sinceIftar = now.getTime() - rd.iftar.getTime();
+  const showIftar =
+    settings.onboarded && rd.info.isRamadan && settings.iftarSeen !== rd.today && sinceIftar >= 0 && sinceIftar < 30 * 60000;
 
   if (!ready) return <div className="shell" aria-busy="true" />;
 
@@ -120,7 +128,7 @@ function Shell() {
         ) : null}
 
         <main>
-          {tab === "today" && <TodayView now={now} viewDate={viewDate} onBackToToday={() => setViewDate(null)} onOpenLearn={() => setTab("learn")} />}
+          {tab === "today" && <TodayView now={now} viewDate={viewDate} onBackToToday={() => setViewDate(null)} onOpenLearn={() => setTab("learn")} onOpenEid={() => { setMoreInitial("eid"); setMoreKey((k) => k + 1); setTab("more"); }} />}
           {tab === "journey" && <JourneyView now={now} onOpenDay={openDay} />}
           {tab === "quran" && <QuranView now={now} />}
           {tab === "learn" && <LearnView key={learnDay} now={now} day={learnDay} />}
@@ -151,6 +159,7 @@ function Shell() {
       </div>
 
       {!settings.onboarded ? <Onboarding /> : settings.analytics === null ? <ConsentBar /> : null}
+      {showIftar ? <IftarMoment now={now} onClose={() => {}} /> : null}
       {settings.analytics ? <Analytics /> : null}
       {toast ? <Toast text={toast} onDone={() => setToast(null)} /> : null}
     </>

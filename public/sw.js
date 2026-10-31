@@ -1,5 +1,5 @@
 // Ramadan Planner service worker: works offline after the first visit.
-const CACHE = "ramadan-planner-v2";
+const CACHE = "ramadan-planner-v3";
 const CORE = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {
@@ -49,15 +49,11 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Same-origin static files (scripts, styles, fonts, images): cache first. Next.js gives them hashed names.
-  if (url.origin === self.location.origin) {
+  if (url.origin === self.location.origin && !req.headers.has("range")) {
     event.respondWith(cacheFirst(req));
     return;
   }
-
-  // Quran recitation audio: keep what was played so it works offline next time.
-  if (url.hostname === "everyayah.com") {
-    event.respondWith(cacheFirst(req));
-  }
+  // Everything else (e.g. Quran recitation audio, which uses range requests) goes straight to the network.
 });
 
 self.addEventListener("notificationclick", (event) => {

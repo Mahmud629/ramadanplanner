@@ -31,8 +31,16 @@ export type DayEntry = {
   quizAnswer: number | null;
   grateful: string;
   improve: string;
+  /** Laylatul Qadr night plan, stored on the day the night leads into (night 21 → day 21) */
+  night?: Partial<Record<NightItem, boolean>>;
+  afuwwCount?: number;
   updatedAt: number;
 };
+
+export const NIGHT_ITEMS = ["isha", "taraweeh", "quran", "tahajjud", "duas", "sadaqah"] as const;
+export type NightItem = (typeof NIGHT_ITEMS)[number];
+
+export type MyDua = { id: string; text: string; answered: boolean; createdAt: number };
 
 export type ThemeMode = "auto" | "night" | "dawn";
 export type Lang = "bn" | "en";
@@ -75,6 +83,10 @@ export type Settings = {
   zakatPrices: { gold: number; silver: number; currency: string };
   fitraPerPerson: number;
   fitraPeople: number;
+  myDuas: MyDua[];
+  /** date (YYYY-MM-DD) on which the iftar moment was last closed */
+  iftarSeen: string;
+  eidName: string;
   updatedAt: number;
 };
 
@@ -162,6 +174,9 @@ export function defaultSettings(): Settings {
     zakatPrices: { gold: 0, silver: 0, currency: "৳" },
     fitraPerPerson: 0,
     fitraPeople: 1,
+    myDuas: [],
+    iftarSeen: "",
+    eidName: "",
     updatedAt: Date.now(),
   };
 }

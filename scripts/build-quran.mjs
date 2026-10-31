@@ -77,7 +77,11 @@ const memorise = [
 ];
 for (const m of memorise) for (let a = m.from; a <= m.to; a++) addVerse(m.s, a);
 
-const out = { verses, slices, surahs, memorise, source: "quran-json 3.1.2 (CC BY 4.0): Uthmani text from quranenc.com, transliteration from tanzil.net" };
+// offsets[s] = number of ayahs before surah s (for global ayah numbers 1–6236)
+const offsets = [0];
+for (let i = 0; i < 114; i++) offsets.push(offsets[i] + ar[i].total_verses);
+
+const out = { verses, slices, surahs, memorise, offsets, source: "quran-json 3.1.2 (CC BY 4.0): Uthmani text from quranenc.com, transliteration from tanzil.net" };
 writeFileSync(new URL("../src/content/quran.generated.json", import.meta.url), JSON.stringify(out));
 console.log(`verses: ${Object.keys(verses).length}, dua slices: ${Object.keys(slices).length}, surahs: ${Object.keys(surahs).length}`);
 for (const [k, v] of Object.entries(slices)) console.log(k.padEnd(12), v);

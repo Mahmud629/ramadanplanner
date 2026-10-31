@@ -12,8 +12,11 @@ import { QURAN_SOURCE } from "@/content";
 import Moon from "./Moon";
 import { Icon, SubHead } from "./ui";
 import { useInstall } from "@/lib/install";
+import { downloadIcs, ramadanIcs } from "@/lib/ics";
+import EidCard from "./EidCard";
+import { MyDuas } from "./Moments";
 
-type Sub = "tasbih" | "zakat" | "fitra" | "qada" | "recap" | "settings" | "backup" | "about";
+export type Sub = "tasbih" | "zakat" | "fitra" | "qada" | "recap" | "settings" | "backup" | "about" | "duas" | "eid" | "alarms";
 
 export default function MoreView({ now, initial }: { now: Date; initial?: Sub | null }) {
   const { t } = useStore();
@@ -28,9 +31,27 @@ export default function MoreView({ now, initial }: { now: Date; initial?: Sub | 
   if (sub === "settings") return <SettingsPanel now={now} onBack={back} />;
   if (sub === "backup") return <Backup onBack={back} />;
   if (sub === "about") return <About onBack={back} />;
+  if (sub === "eid") return <EidCard now={now} onBack={back} />;
+  if (sub === "duas")
+    return (
+      <div className="stack-lg">
+        <SubHead title={t("myDuas")} onBack={back} />
+        <MyDuas />
+      </div>
+    );
+  if (sub === "alarms")
+    return (
+      <div className="stack-lg">
+        <SubHead title={t("calendarAlarms")} onBack={back} />
+        <CalendarAlarms now={now} />
+      </div>
+    );
 
   const items: { id: Sub; icon: string; label: string }[] = [
     { id: "recap", icon: "star", label: t("recap") },
+    { id: "duas", icon: "heart", label: t("myDuas") },
+    { id: "alarms", icon: "bell", label: t("calendarAlarms") },
+    { id: "eid", icon: "moon", label: t("eidCard") },
     { id: "tasbih", icon: "beads", label: t("tasbih") },
     { id: "qada", icon: "calendar", label: t("qada") },
     { id: "fitra", icon: "gift", label: t("fitra") },
@@ -60,6 +81,25 @@ export default function MoreView({ now, initial }: { now: Date; initial?: Sub | 
       <InstallCard />
       <List list={items} />
       <List list={items2} />
+    </div>
+  );
+}
+
+export function CalendarAlarms({ now }: { now: Date }) {
+  const { settings, t } = useStore();
+  const rd = useRamadan(now);
+  return (
+    <div className="stack">
+      <button
+        className="btn primary"
+        onClick={() => {
+          const year = rd.info.hijri.month > 9 ? rd.info.hijri.year + 1 : rd.info.hijri.year;
+          downloadIcs(ramadanIcs(rd.info.startISO, settings, year), `ramadan-${year}-sehri-iftar.ics`);
+        }}
+      >
+        <Icon name="bell" size={18} /> {t("calendarBtn")}
+      </button>
+      <p className="tiny muted">{t("calendarNote")}</p>
     </div>
   );
 }
@@ -520,6 +560,7 @@ function SettingsPanel({ now, onBack }: { now: Date; onBack: () => void }) {
           </button>
         </div>
         <p className="tiny muted">{t("remindersNote")}</p>
+        <CalendarAlarms now={now} />
       </section>
 
       <section className="section">

@@ -12,6 +12,7 @@ import { contentForDay, duaArabic } from "@/content";
 import { IFTAR_DUA } from "@/content/days";
 import Moon from "./Moon";
 import { DuaCard } from "./DailyContent";
+import { NightPlan } from "./Moments";
 import { Check, CheckRow, Chip, Icon, tap } from "./ui";
 
 type Props = {
@@ -20,14 +21,16 @@ type Props = {
   viewDate: string | null;
   onBackToToday: () => void;
   onOpenLearn: () => void;
+  onOpenEid: () => void;
 };
 
-export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn }: Props) {
+export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, onOpenEid }: Props) {
   const { settings, days, t, updateDay, getDay } = useStore();
   const lang = settings.lang;
   const rd = useRamadan(now);
   const { info } = rd;
   const [moreOpen, setMoreOpen] = useState(false);
+  const [nightOpen, setNightOpen] = useState(false);
 
   const date = viewDate ?? rd.today;
   const isToday = date === rd.today;
@@ -58,7 +61,8 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn }:
   // Show the iftar dua by itself around iftar time, so it's there when it's needed.
   const msToIftar = rd.iftar.getTime() - now.getTime();
   const iftarSoon = isToday && inRamadan && msToIftar < 20 * 60000 && msToIftar > -40 * 60000;
-  const oddNight = isToday && info.isOddNight && now >= rd.times.maghrib;
+  const night = isToday ? rd.night : null;
+  const eidSoon = isToday && info.dayIndex >= 28 && info.dayIndex <= 33;
 
   const pagesTarget = pagesPerDay(settings.khatmGoal);
   const deedsDone = DEEDS.filter((d) => entry.deeds[d]).length + AVOIDS.filter((d) => entry.avoided[d]).length;
@@ -126,13 +130,26 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn }:
         </div>
       ) : iftarSoon ? (
         <DuaCard title={t("iftarDua")} dua={IFTAR_DUA} />
-      ) : oddNight ? (
-        <div className="notice gold">
-          <span className="row" style={{ gap: 8 }}>
-            <Icon name="star" size={18} /> {t("oddNightTonight")}
+      ) : night ? (
+        <button className="notice gold night-card" onClick={() => setNightOpen(true)}>
+          <span className="row" style={{ gap: 10, textAlign: "left" }}>
+            <Icon name="star" size={20} />
+            <span>
+              <b style={{ display: "block" }}>{t("nightTitle", { n: night })}</b>
+              <span className="small">{night % 2 ? t("oddNightLabel") : t("evenNightLabel")}</span>
+            </span>
           </span>
+          <span className="btn small">{t("nightPlan")}</span>
+        </button>
+      ) : eidSoon ? (
+        <div className="notice gold">
+          <span>{t("eidPrompt")}</span>
+          <button className="btn small" onClick={onOpenEid}>
+            {t("makeCard")}
+          </button>
         </div>
       ) : null}
+      {nightOpen && night ? <NightPlan now={now} night={night} onClose={() => setNightOpen(false)} /> : null}
 
       {/* ---------- fast ---------- */}
       {inRamadan ? (
