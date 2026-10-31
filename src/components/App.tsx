@@ -12,6 +12,7 @@ import MoreView, { LocationPicker, type Sub } from "./MoreView";
 import { IftarMoment } from "./Moments";
 import { Cheers } from "./Cheers";
 import { playChime } from "@/lib/chime";
+import { setBarsStyle } from "@/lib/native";
 import { Icon, Toast } from "./ui";
 import { dayIndexFor, longDate } from "@/lib/ramadan";
 import "@/lib/install";
@@ -46,6 +47,7 @@ function Shell() {
     document.documentElement.lang = lang;
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", theme === "night" ? "#0b2523" : "#edf2ea");
+    setBarsStyle(theme);
   }, [theme, lang]);
 
   // scroll to top when switching tabs

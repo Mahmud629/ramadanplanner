@@ -12,6 +12,7 @@ import { QURAN_SOURCE } from "@/content";
 import { Icon, SubHead } from "./ui";
 import { useInstall } from "@/lib/install";
 import { downloadIcs, ramadanIcs } from "@/lib/ics";
+import { saveFile } from "@/lib/native";
 import EidCard from "./EidCard";
 import { downloadCanvas, drawProgress, H, loadCardFonts, shareCanvas, W } from "@/lib/cardArt";
 import { MyDuas } from "./Moments";
@@ -595,11 +596,7 @@ function Backup({ onBack }: { onBack: () => void }) {
   const download = async () => {
     const data = { app: "ramadan-planner", version: 2, exportedAt: new Date().toISOString(), days: await db.days.toArray(), settings: await db.settings.get("settings") };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `ramadan-planner-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+    await saveFile(blob, `ramadan-planner-backup-${new Date().toISOString().slice(0, 10)}.json`);
   };
 
   const restore = async (f: File) => {

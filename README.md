@@ -34,3 +34,23 @@ firebase deploy        # serves ./out (see firebase.json)
 Data saved by last year's version (2026) is converted automatically the first time the new version opens.
 
 Prepared by Capt Asif Mahmud.
+
+## Android app (APK)
+
+The `android/` folder wraps the same web app with [Capacitor](https://capacitorjs.com/), so it runs fully offline on the phone. Every push to `v2` or `main` builds it on GitHub (`.github/workflows/android.yml`) and puts the files on the repo's **Releases** page:
+
+- **Without a signing key:** a test APK (`…-test.apk`) signed with a temporary key. Good for trying the app.
+- **With the signing key:** a signed APK to share, and an `.aab` bundle to upload to Google Play.
+
+To turn on signed builds, add these four secrets under **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Name | Value |
+| --- | --- |
+| `ANDROID_KEYSTORE_B64` | the base64 text of `ramadan-planner-release.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | the store password |
+| `ANDROID_KEY_ALIAS` | `ramadanplanner` |
+| `ANDROID_KEY_PASSWORD` | the key password |
+
+Keep the keystore file and its password safe and private. Every future update must be signed with the same key, and Google Play will reject updates signed with a different one.
+
+Build locally (needs Android Studio): `npm run build && npx cap sync android && npx cap open android`.

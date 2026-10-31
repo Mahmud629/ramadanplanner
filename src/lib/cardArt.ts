@@ -4,6 +4,7 @@
  */
 import { digits } from "./i18n";
 import type { Lang } from "./db";
+import { saveFile } from "./native";
 
 export const W = 1080;
 export const H = 1350;
@@ -522,36 +523,16 @@ export async function drawProgress(c: HTMLCanvasElement, o: ProgressOpts) {
 
 /* ---------------- share / download ---------------- */
 
-export async function shareCanvas(c: HTMLCanvasElement, filename: string, text?: string) {
-  const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
-  if (!blob) return "failed" as const;
-  const file = new File([blob], filename, { type: "image/png" });
-  try {
-    if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], text });
-      return "shared" as const;
-    }
-  } catch (e) {
-    if ((e as DOMException)?.name === "AbortError") return "cancelled" as const;
-  }
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-  return "downloaded" as const;
+function canvasBlob(c: HTMLCanvasElement) {
+  return new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
+}
+
+export async function shareCanvas(c: HTMLCanvasElement, filename: string, title?: string) {
+  const blob = await canvasBlob(c);
+  if (blob) return saveFile(blob, filename, { preferShare: true, title });
 }
 
 export async function downloadCanvas(c: HTMLCanvasElement, filename: string) {
-  const blob = await new Promise<Blob | null>((res) => c.toBlob(res, "image/png"));
-  if (!blob) return;
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  const blob = await canvasBlob(c);
+  if (blob) return saveFile(blob, filename);
 }

@@ -1,0 +1,16 @@
+{
+  "appId": "com.ramadanplanner.app",
+  "appName": "Ramadan Planner",
+  "webDir": "out",
+  "android": {
+    "backgroundColor": "#0b2523",
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "css",
+      "initialViewportFitValueHint": "cover",
+      "style": "DARK"
+    }
+  }
+}

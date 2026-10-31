@@ -1,0 +1,105 @@
+name: Android APK
+
+# Builds the Android app from the website code and publishes it on the Releases page.
+# - With the signing secrets set (see README), it makes a signed APK and a Play Store bundle (.aab).
+# - Without them, it makes a test APK signed with a temporary debug key.
+on:
+  push:
+    branches: [v2, main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+      VERSION_NAME: 2.0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build the web app
+        run: |
+          npm ci
+          npm run build
+
+      - name: Copy it into the Android project
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Restore the signing key
+        id: key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "path=$RUNNER_TEMP/release.jks" >> "$GITHUB_OUTPUT"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the signed APK and Play Store bundle
+        if: steps.key.outputs.signed == 'true'
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ steps.key.outputs.path }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease bundleRelease
+          mkdir -p ../dist
+          cp app/build/outputs/apk/release/app-release.apk "../dist/RamadanPlanner-$VERSION_NAME.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "../dist/RamadanPlanner-$VERSION_NAME.aab"
+
+      - name: Build a test APK (no signing key yet)
+        if: steps.key.outputs.signed != 'true'
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+          mkdir -p ../dist
+          cp app/build/outputs/apk/debug/app-debug.apk "../dist/RamadanPlanner-$VERSION_NAME-test.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RamadanPlanner-${{ env.VERSION_NAME }}
+          path: dist/*
+
+      - name: Publish on the Releases page
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SIGNED: ${{ steps.key.outputs.signed }}
+        run: |
+          TAG="android-${{ github.ref_name }}"
+          if [ "$SIGNED" = "true" ]; then KIND="signed"; else KIND="test (debug-signed)"; fi
+          NOTES="Ramadan Planner $VERSION_NAME, $KIND build from ${{ github.ref_name }} @ ${GITHUB_SHA::7}.
+          Install: download the .apk on your Android phone, open it, and allow installing from this source."
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "Ramadan Planner $VERSION_NAME (Android)" --notes "$NOTES" --target "$GITHUB_SHA"
+            for a in $(gh release view "$TAG" --json assets --jq '.assets[].name'); do gh release delete-asset "$TAG" "$a" -y; done
+          else
+            gh release create "$TAG" --title "Ramadan Planner $VERSION_NAME (Android)" --notes "$NOTES" --target "$GITHUB_SHA" --prerelease
+          fi
+          gh release upload "$TAG" dist/* --clobber

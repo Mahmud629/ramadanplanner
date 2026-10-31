@@ -1,6 +1,7 @@
 import { addDays } from "./dates";
 import type { Settings } from "./db";
 import { iftarTime, prayerTimes, sehriEnd } from "./prayer";
+import { saveFile } from "./native";
 
 /**
  * A calendar file with 60 events (sehri end and iftar for each of the 30 days), each with
@@ -94,19 +95,5 @@ function fold(line: string) {
 }
 
 export function downloadIcs(text: string, filename: string) {
-  const blob = new Blob([text], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  if (ios) {
-    // Safari on iPhone opens the calendar import screen when navigating to the file
-    window.location.href = url;
-  } else {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  return saveFile(new Blob([text], { type: "text/calendar;charset=utf-8" }), filename, { title: filename });
 }
