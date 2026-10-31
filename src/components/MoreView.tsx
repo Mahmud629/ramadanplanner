@@ -81,6 +81,9 @@ export default function MoreView({ now, initial }: { now: Date; initial?: Sub | 
       <InstallCard />
       <List list={items} />
       <List list={items2} />
+      <p className="tiny faint" style={{ textAlign: "center" }}>
+        {t("preparedBy")}
+      </p>
     </div>
   );
 }
@@ -197,7 +200,7 @@ function MoneyInput({ label, value, onChange }: { label: string; value: number; 
 }
 
 function fmt(n: number, lang: "en" | "bn") {
-  return n.toLocaleString(lang === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 0 });
+  return digits(n.toLocaleString(lang === "bn" ? "bn-BD" : "en-US", { maximumFractionDigits: 0 }), lang);
 }
 
 function Zakat({ onBack }: { onBack: () => void }) {
@@ -521,7 +524,7 @@ function SettingsPanel({ now, onBack }: { now: Date; onBack: () => void }) {
 
       <section className="section">
         <h2>{t("ramadanStart")}</h2>
-        <p className="small">{t("expectedStart", { d: new Date(rd.info.startISO + "T00:00:00").toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) })}</p>
+        <p className="small">{t("expectedStart", { d: digits(new Date(rd.info.startISO + "T00:00:00").toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }), lang) })}</p>
         <span className="muted small">{t("hijriAdjust")}</span>
         <NumStep k="hijriAdjust" min={-2} max={2} />
         <p className="tiny muted">{t("hijriAdjustNote")}</p>

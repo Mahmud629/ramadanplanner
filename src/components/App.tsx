@@ -106,6 +106,7 @@ function Shell() {
 
   return (
     <>
+      <div className="status-shield" aria-hidden />
       <div className="shell">
         {tab === "today" ? (
           <header className="topbar">

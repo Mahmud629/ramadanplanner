@@ -2,6 +2,7 @@ import { CalculationMethod, Coordinates, Madhab, PrayerTimes } from "adhan";
 import { fromISO } from "./dates";
 import type { Method, Settings } from "./db";
 import { cityById } from "./cities";
+import { digits } from "./i18n";
 
 export type Times = { fajr: Date; sunrise: Date; dhuhr: Date; asr: Date; maghrib: Date; isha: Date };
 
@@ -36,7 +37,7 @@ export function iftarTime(t: Times, s: Settings) {
 }
 
 export function formatClock(d: Date, tz: string, lang: "en" | "bn") {
-  return d.toLocaleTimeString(lang === "bn" ? "bn-BD" : "en-GB", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz });
+  return digits(d.toLocaleTimeString(lang === "bn" ? "bn-BD" : "en-GB", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: tz }), lang);
 }
 
 /** "Today" in the location's own time zone. */

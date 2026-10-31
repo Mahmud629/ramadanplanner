@@ -169,7 +169,20 @@ p {
 .shell {
   max-width: 640px;
   margin: 0 auto;
-  padding: 0 18px calc(96px + env(safe-area-inset-bottom));
+  /* keep content below the phone's clock/notch and above the tab bar */
+  padding: env(safe-area-inset-top) 18px calc(78px + env(safe-area-inset-bottom));
+}
+/* when installed on iPhone the status bar is see-through: give it a solid backing
+   so scrolled content doesn't show behind the clock */
+.status-shield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top);
+  background: var(--bg);
+  z-index: 25;
+  transition: background-color 400ms ease;
 }
 .stack {
   display: flex;
@@ -883,7 +896,8 @@ label.field {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-top: 1px solid var(--line);
-  padding-bottom: env(safe-area-inset-bottom);
+  /* the home-indicator area needs only part of its full inset under the labels */
+  padding-bottom: max(4px, calc(env(safe-area-inset-bottom) - 16px));
 }
 .tabbar nav {
   max-width: 640px;
@@ -894,7 +908,7 @@ label.field {
 .tabbar button {
   border: 0;
   background: transparent;
-  padding: 9px 0 8px;
+  padding: 8px 0 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -919,7 +933,8 @@ label.field {
 .sheet {
   width: 100%;
   max-width: 640px;
-  max-height: 92vh;
+  max-height: calc(100vh - env(safe-area-inset-top) - 12px);
+  max-height: calc(100dvh - env(safe-area-inset-top) - 12px);
   overflow: auto;
   background: var(--bg);
   border-radius: 24px 24px 0 0;
@@ -936,7 +951,7 @@ label.field {
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(84px + env(safe-area-inset-bottom));
+  bottom: calc(76px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   z-index: 50;
   background: var(--gold);

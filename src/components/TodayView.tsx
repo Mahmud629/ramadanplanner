@@ -294,9 +294,6 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
         ) : null}
       </section>
 
-      <p className="tiny faint" style={{ textAlign: "center", paddingTop: 4 }}>
-        {t("preparedBy")}
-      </p>
     </div>
   );
 }

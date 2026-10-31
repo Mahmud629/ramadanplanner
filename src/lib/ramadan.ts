@@ -1,5 +1,6 @@
 import { addDays, diffDays, fromISO, toISO } from "./dates";
 import type { Settings } from "./db";
+import { digits } from "./i18n";
 
 const hijriFmt = () =>
   new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", { day: "numeric", month: "numeric", year: "numeric" });
@@ -68,11 +69,11 @@ export const HIJRI_MONTHS = {
 };
 
 export function longDate(iso: string, lang: "en" | "bn") {
-  return fromISO(iso).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", { weekday: "long", day: "numeric", month: "long" });
+  return digits(fromISO(iso).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", { weekday: "long", day: "numeric", month: "long" }), lang);
 }
 
 export function shortDate(iso: string, lang: "en" | "bn") {
-  return fromISO(iso).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", { day: "numeric", month: "short" });
+  return digits(fromISO(iso).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-GB", { day: "numeric", month: "short" }), lang);
 }
 
 export { toISO };
