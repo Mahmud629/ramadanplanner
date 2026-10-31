@@ -13,6 +13,7 @@ import { IFTAR_DUA } from "@/content/days";
 import Moon from "./Moon";
 import { DuaCard } from "./DailyContent";
 import { NightPlan } from "./Moments";
+import { useCheer } from "./Cheers";
 import { Check, CheckRow, Chip, Icon, tap } from "./ui";
 
 type Props = {
@@ -52,6 +53,8 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
   const score = dayScore(entry, settings.khatmGoal);
   const soFar = ramadanScore(days, info.startISO, Math.min(info.dayIndex, 30), settings.khatmGoal);
   const clock = (d: Date) => formatClock(d, rd.tz, lang);
+  const cheer = useCheer();
+  const lower = (x: string) => (lang === "en" ? x.toLowerCase() : x);
   const set = (patch: Parameters<typeof updateDay>[1]) => {
     if (!editable) return;
     tap();
@@ -155,7 +158,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
       {inRamadan ? (
         <section className="block">
           <h2>{t("fast")}</h2>
-          <FastControl status={entry.fast} excuse={entry.excuse} disabled={!editable} onChange={(fast, excuse) => set({ fast, excuse })} />
+          <FastControl status={entry.fast} excuse={entry.excuse} disabled={!editable} onChange={(fast, excuse) => {
+              set({ fast, excuse });
+              if (fast === "done" && entry.fast !== "done" && editable) cheer("c_fast");
+            }} />
         </section>
       ) : null}
 
@@ -178,7 +184,14 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
                 role="checkbox"
                 aria-checked={on}
                 disabled={!editable}
-                onClick={() => set((e) => ({ prayers: { ...e.prayers, [p]: !e.prayers[p] } }))}
+                onClick={() => {
+                  set((e) => ({ prayers: { ...e.prayers, [p]: !e.prayers[p] } }));
+                  if (!on && editable) {
+                    const count = FARD.filter((k) => entry.prayers[k]).length + 1;
+                    if (count === 5) cheer("c_allPrayers", undefined, true);
+                    else cheer("c_prayer", { x: t(p) });
+                  }
+                }}
               >
                 <span className="pname">{t(p)}</span>
                 <span className="ptime num">{clock(times[p])}</span>
@@ -190,7 +203,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
         {periodExcused ? <p className="tiny muted">{t("prayersExcused")}</p> : null}
         <div className="chips scroll-x">
           {EXTRAS.filter((x) => inRamadan || x !== "taraweeh").map((x) => (
-            <Chip key={x} on={entry.extras[x]} disabled={!editable} onToggle={() => set((e) => ({ extras: { ...e.extras, [x]: !e.extras[x] } }))}>
+            <Chip key={x} on={entry.extras[x]} disabled={!editable} onToggle={() => {
+              set((e) => ({ extras: { ...e.extras, [x]: !e.extras[x] } }));
+              if (!entry.extras[x] && editable) cheer("c_prayer", { x: t(x) });
+            }}>
               {t(x)}
             </Chip>
           ))}
@@ -211,7 +227,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
               −
             </button>
             <span className="num">{digits(entry.quranPages, lang)}</span>
-            <button aria-label={t("addPage")} disabled={!editable} onClick={() => set((e) => ({ quranPages: e.quranPages + 1 }))}>
+            <button aria-label={t("addPage")} disabled={!editable} onClick={() => {
+              set((e) => ({ quranPages: e.quranPages + 1 }));
+              if (entry.quranPages + 1 === pagesTarget && editable) cheer("c_quran", undefined, true);
+            }}>
               +
             </button>
           </div>
@@ -234,7 +253,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
           <span className="small muted clamp-2">{c.dua.meaning[lang]}</span>
         </button>
         <div className="between">
-          <CheckRow on={entry.duaLearned} disabled={!editable} onToggle={() => set((e) => ({ duaLearned: !e.duaLearned }))}>
+          <CheckRow on={entry.duaLearned} disabled={!editable} onToggle={() => {
+            set((e) => ({ duaLearned: !e.duaLearned }));
+            if (!entry.duaLearned && editable) cheer("c_dua");
+          }}>
             {t("learned")}
           </CheckRow>
           <button className="btn small" onClick={onOpenLearn}>
@@ -247,7 +269,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
       {/* ---------- today's action ---------- */}
       <section className="block">
         <p className="kicker">{t("actionOfDay")}</p>
-        <CheckRow on={entry.actionDone} disabled={!editable} onToggle={() => set((e) => ({ actionDone: !e.actionDone }))}>
+        <CheckRow on={entry.actionDone} disabled={!editable} onToggle={() => {
+          set((e) => ({ actionDone: !e.actionDone }));
+          if (!entry.actionDone && editable) cheer("c_action");
+        }}>
           {c.action[lang]}
         </CheckRow>
       </section>
@@ -267,7 +292,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
           <div className="fold-body">
             <div className="chips">
               {DEEDS.map((d) => (
-                <Chip key={d} on={!!entry.deeds[d]} disabled={!editable} onToggle={() => set((e) => ({ deeds: { ...e.deeds, [d]: !e.deeds[d] } }))}>
+                <Chip key={d} on={!!entry.deeds[d]} disabled={!editable} onToggle={() => {
+                  set((e) => ({ deeds: { ...e.deeds, [d]: !e.deeds[d] } }));
+                  if (!entry.deeds[d] && editable) cheer("c_deed", { x: t(d) });
+                }}>
                   {t(d)}
                 </Chip>
               ))}
@@ -277,7 +305,10 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
             </h3>
             <div className="chips">
               {AVOIDS.map((d) => (
-                <Chip key={d} tone="gold" on={!!entry.avoided[d]} disabled={!editable} onToggle={() => set((e) => ({ avoided: { ...e.avoided, [d]: !e.avoided[d] } }))}>
+                <Chip key={d} tone="gold" on={!!entry.avoided[d]} disabled={!editable} onToggle={() => {
+                  set((e) => ({ avoided: { ...e.avoided, [d]: !e.avoided[d] } }));
+                  if (!entry.avoided[d] && editable) cheer("c_avoid", { x: lower(t(d)) });
+                }}>
                   {t(d)}
                 </Chip>
               ))}

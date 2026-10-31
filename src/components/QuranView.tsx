@@ -8,6 +8,7 @@ import { digits } from "@/lib/i18n";
 import { juzForPage, KHATM_PAGES, pagesPerDay } from "@/lib/score";
 import { arabicNumber, MEMORISE, surahName, verse } from "@/content";
 import { AudioButton, ayahAudioUrl, Icon } from "./ui";
+import { useCheer } from "./Cheers";
 
 export default function QuranView({ now }: { now: Date }) {
   const { settings, days, t, updateSettings } = useStore();
@@ -135,7 +136,9 @@ function SurahPanel({ s, from, to, id }: { s: number; from: number; to: number; 
   const lang = settings.lang;
   const ayahs = Array.from({ length: to - from + 1 }, (_, i) => from + i);
   const st = settings.memorised[id];
+  const cheer = useCheer();
   const setSt = (v: "learning" | "done" | null) => {
+    if (v === "done" && st !== "done") cheer("c_memorised", { x: id === "kursi" ? t("ayatKursi") : surahName(s, lang) }, true);
     const next = { ...settings.memorised };
     if (v) next[id] = v;
     else delete next[id];

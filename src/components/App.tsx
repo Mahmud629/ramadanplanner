@@ -10,6 +10,7 @@ import QuranView from "./QuranView";
 import LearnView from "./LearnView";
 import MoreView, { LocationPicker, type Sub } from "./MoreView";
 import { IftarMoment } from "./Moments";
+import { Cheers } from "./Cheers";
 import { playChime } from "@/lib/chime";
 import { Icon, Toast } from "./ui";
 import { dayIndexFor, longDate } from "@/lib/ramadan";
@@ -166,6 +167,7 @@ function Shell() {
       {showIftar ? <IftarMoment now={now} onClose={() => {}} /> : null}
       {settings.analytics ? <Analytics /> : null}
       {toast ? <Toast text={toast} onDone={() => setToast(null)} /> : null}
+      <Cheers />
     </>
   );
 }

@@ -11,6 +11,7 @@ import { duaArabic } from "@/content";
 import { playChime } from "@/lib/chime";
 import Moon from "./Moon";
 import { CheckRow, Icon, tap } from "./ui";
+import { useCheer } from "./Cheers";
 
 /* ---------------- Iftar moment ---------------- */
 export function IftarMoment({ now, onClose }: { now: Date; onClose: () => void }) {
@@ -89,6 +90,7 @@ export function NightPlan({ now, night, onClose }: { now: Date; night: number; o
   const e = getDay(date);
   void days[date];
   const done = NIGHT_ITEMS.filter((k) => e.night?.[k]).length;
+  const cheer = useCheer();
 
   return (
     <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="night-title" onClick={onClose}>
@@ -121,7 +123,14 @@ export function NightPlan({ now, night, onClose }: { now: Date; night: number; o
 
         <div className="stack" style={{ gap: 2 }}>
           {NIGHT_ITEMS.map((k) => (
-            <CheckRow key={k} on={!!e.night?.[k]} onToggle={() => { tap(); updateDay(date, (x) => ({ night: { ...x.night, [k]: !x.night?.[k] } })); }}>
+            <CheckRow key={k} on={!!e.night?.[k]} onToggle={() => {
+              tap();
+              updateDay(date, (x) => ({ night: { ...x.night, [k]: !x.night?.[k] } }));
+              if (!e.night?.[k]) {
+                if (done + 1 === NIGHT_ITEMS.length) cheer("c_nightAll", undefined, true);
+                else cheer("c_night");
+              }
+            }}>
               {t(`n_${k}` as const)}
             </CheckRow>
           ))}
@@ -158,6 +167,7 @@ export function NightPlan({ now, night, onClose }: { now: Date; night: number; o
 /* ---------------- My dua list ---------------- */
 export function MyDuas() {
   const { settings, t, updateSettings } = useStore();
+  const cheer = useCheer();
   const [text, setText] = useState("");
   const list = settings.myDuas;
   const save = (next: MyDua[]) => updateSettings({ myDuas: next });
@@ -191,7 +201,10 @@ export function MyDuas() {
           <div key={d.id} className="between" style={{ padding: "8px 0", borderTop: i ? "1px solid var(--line)" : 0, alignItems: "flex-start" }}>
             <div style={{ minWidth: 0, flex: 1 }}>
               <p style={{ textDecoration: d.answered ? "line-through" : undefined, opacity: d.answered ? 0.7 : 1 }}>{d.text}</p>
-              <CheckRow on={d.answered} onToggle={() => save(list.map((x) => (x.id === d.id ? { ...x, answered: !x.answered } : x)))}>
+              <CheckRow on={d.answered} onToggle={() => {
+                save(list.map((x) => (x.id === d.id ? { ...x, answered: !x.answered } : x)));
+                if (!d.answered) cheer("c_answered", undefined, true);
+              }}>
                 <span className="small muted">{t("answered")}</span>
               </CheckRow>
             </div>

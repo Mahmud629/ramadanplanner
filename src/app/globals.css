@@ -1023,6 +1023,106 @@ label.field {
   border: 1px solid var(--line);
 }
 
+/* "Alhamdulillah" pop-up */
+.cheer {
+  position: fixed;
+  left: 50%;
+  bottom: calc(74px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 55;
+  width: min(440px, calc(100% - 28px));
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--leaf);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.45);
+  animation: cheer-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cheer.big {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, var(--surface-2), color-mix(in srgb, var(--gold) 14%, var(--surface-2)));
+}
+.cheer-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--leaf);
+  color: var(--bg);
+}
+.cheer.big .cheer-icon {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+.cheer-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  line-height: 1.45;
+}
+.cheer-text b {
+  font-size: 1.02rem;
+}
+.cheer-bless {
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+@keyframes cheer-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 16px) scale(0.97);
+  }
+}
+
+/* Eid card design picker */
+.design-picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.design-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.swatch-art {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 12px;
+  border: 2px solid var(--line);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.design-swatch[aria-checked="true"] .swatch-art {
+  border-color: var(--gold);
+  transform: translateY(-2px);
+}
+.design-swatch[aria-checked="true"] {
+  color: var(--gold);
+  font-weight: 600;
+}
+.crescent .swatch-art {
+  background: radial-gradient(circle at 46% 30%, #f3d88f 0 15%, transparent 16%), radial-gradient(circle at 54% 26%, #0d2c29 0 15%, transparent 16%), linear-gradient(#0d2c29, #071816);
+}
+.arch .swatch-art {
+  background: radial-gradient(ellipse 34% 40% at 50% 44%, #14493b 0 98%, transparent 100%), linear-gradient(#14493b, #14493b) 50% 100% / 68% 55% no-repeat, linear-gradient(#eef3ea, #dce8dc);
+}
+.lanterns .swatch-art {
+  background: radial-gradient(circle at 30% 34%, #f6c561 0 7%, transparent 18%), radial-gradient(circle at 52% 44%, #f6c561 0 9%, transparent 22%), radial-gradient(circle at 74% 30%, #f6c561 0 6%, transparent 16%), linear-gradient(#1a1a44, #0d2a32);
+}
+.emblem .swatch-art {
+  background: url("/logo-emblem.png") 50% 28% / 46% no-repeat, linear-gradient(#ffffff, #eef4ec);
+}
+
 .sub-head {
   display: flex;
   align-items: center;

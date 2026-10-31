@@ -124,6 +124,12 @@ export function Icon({ name, size = 22 }: { name: string; size?: number }) {
           <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
         </svg>
       );
+    case "share":
+      return (
+        <svg {...p}>
+          <path d="M12 15V4M8 7.5 12 3.5l4 4M6 11H5v9h14v-9h-1" />
+        </svg>
+      );
     case "trash":
       return (
         <svg {...p}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "@/lib/store";
 import { useRamadan } from "@/lib/useRamadan";
 import { ramadanDates } from "@/lib/ramadan";
@@ -9,11 +9,11 @@ import { bestStreak, prayerPred, prayersCount, ramadanScore } from "@/lib/score"
 import { CITIES } from "@/lib/cities";
 import { db, type DayEntry, type Method, type Settings } from "@/lib/db";
 import { QURAN_SOURCE } from "@/content";
-import Moon from "./Moon";
 import { Icon, SubHead } from "./ui";
 import { useInstall } from "@/lib/install";
 import { downloadIcs, ramadanIcs } from "@/lib/ics";
 import EidCard from "./EidCard";
+import { downloadCanvas, drawProgress, H, loadCardFonts, shareCanvas, W } from "@/lib/cardArt";
 import { MyDuas } from "./Moments";
 
 export type Sub = "tasbih" | "zakat" | "fitra" | "qada" | "recap" | "settings" | "backup" | "about" | "duas" | "eid" | "alarms";
@@ -321,7 +321,7 @@ function Qada({ now, onBack }: { now: Date; onBack: () => void }) {
 
 /* ---------------- Recap ---------------- */
 function Recap({ now, onBack }: { now: Date; onBack: () => void }) {
-  const { settings, days, t } = useStore();
+  const { settings, days, t, updateSettings } = useStore();
   const lang = settings.lang;
   const rd = useRamadan(now);
   const dates = ramadanDates(rd.info.startISO);
@@ -334,51 +334,48 @@ function Recap({ now, onBack }: { now: Date; onBack: () => void }) {
     lessons: es.filter((e) => e.lessonRead).length,
     streak: bestStreak(days, dates, prayerPred),
   };
-  const score = ramadanScore(days, rd.info.startISO, Math.min(30, rd.info.dayIndex), settings.khatmGoal);
-  const year = rd.info.startISO.slice(0, 4);
-  const rows: [number, string][] = [
-    [stats.fasts, t("fastsKept")],
-    [stats.prayers, t("prayersPrayed")],
-    [stats.pages, t("pagesOfQuran")],
-    [stats.duas, t("duasLearned")],
-    [stats.lessons, t("lessonsRead")],
-    [stats.streak, t("bestStreak")],
-  ];
-  const text = `${t("recapTitle", { y: year })}\n` + rows.map(([n, l]) => `${digits(n, lang)} ${l}`).join("\n");
-  const share = async () => {
-    try {
-      if (navigator.share) await navigator.share({ text });
-      else await navigator.clipboard.writeText(text);
-    } catch {
-      /* cancelled */
-    }
-  };
+  const day = Math.min(30, rd.info.dayIndex);
+  const score = ramadanScore(days, rd.info.startISO, day, settings.khatmGoal);
+  const canvas = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      await loadCardFonts();
+      if (alive && canvas.current)
+        await drawProgress(canvas.current, {
+          lang,
+          name: settings.eidName.trim(),
+          year: rd.info.hijri.year,
+          day,
+          score,
+          hijriDay: day >= 1 ? day : rd.info.hijri.day,
+          stats,
+        });
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lang, settings.eidName, day, score, stats.fasts, stats.prayers, stats.pages, stats.duas, stats.lessons, stats.streak]);
+
   return (
     <div className="stack-lg">
       <SubHead title={t("recap")} onBack={onBack} />
-      <div className="scroll stack" style={{ alignItems: "center", textAlign: "center", gap: 14 }}>
-        <div style={{ width: 150, height: 150 }}>
-          <Moon hijriDay={15} score={score} size={160} />
-        </div>
-        <h2 style={{ fontSize: "1.3rem" }}>{t("recapTitle", { y: digits(year, lang) })}</h2>
-        <div className="num" style={{ fontSize: "2.6rem", lineHeight: 1, color: "var(--gold)" }}>
-          {digits(score, lang)}%
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, width: "100%" }}>
-          {rows.map(([n, l]) => (
-            <div key={l}>
-              <div className="num" style={{ fontSize: "1.6rem", lineHeight: 1.1 }}>
-                {digits(n, lang)}
-              </div>
-              <div className="tiny muted">{l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <canvas ref={canvas} width={W} height={H} className="eid-canvas" aria-label={t("recapTitle", { y: digits(rd.info.hijri.year, lang) })} />
+      <label className="field">
+        <span className="muted">{t("yourName")}</span>
+        <input type="text" value={settings.eidName} maxLength={40} onChange={(e) => updateSettings({ eidName: e.target.value })} />
+      </label>
       <p className="small muted">{t("recapPrivate")}</p>
-      <button className="btn" onClick={share}>
-        {t("share")}
-      </button>
+      <div className="row">
+        <button className="btn primary" style={{ flex: 1 }} onClick={() => canvas.current && shareCanvas(canvas.current, "my-ramadan.png")}>
+          <Icon name="share" size={18} /> {t("shareProgress")}
+        </button>
+        <button className="btn" style={{ flex: 1 }} onClick={() => canvas.current && downloadCanvas(canvas.current, "my-ramadan.png")}>
+          <Icon name="save" size={18} /> {t("downloadCard")}
+        </button>
+      </div>
     </div>
   );
 }
@@ -564,6 +561,16 @@ function SettingsPanel({ now, onBack }: { now: Date; onBack: () => void }) {
         </div>
         <p className="tiny muted">{t("remindersNote")}</p>
         <CalendarAlarms now={now} />
+      </section>
+
+      <section className="section">
+        <div className="between">
+          <h2>{t("cheersSetting")}</h2>
+          <button className="chip" aria-pressed={settings.cheers} onClick={() => updateSettings({ cheers: !settings.cheers })}>
+            {settings.cheers ? t("on") : t("off")}
+          </button>
+        </div>
+        <p className="tiny muted">{t("cheersNote")}</p>
       </section>
 
       <section className="section">

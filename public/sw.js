@@ -1,6 +1,6 @@
 // Ramadan Planner service worker: works offline after the first visit.
-const CACHE = "ramadan-planner-v5";
-const CORE = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png"];
+const CACHE = "ramadan-planner-v6";
+const CORE = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png", "/logo-emblem.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));

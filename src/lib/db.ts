@@ -87,6 +87,8 @@ export type Settings = {
   /** date (YYYY-MM-DD) on which the iftar moment was last closed */
   iftarSeen: string;
   eidName: string;
+  /** show the "Alhamdulillah" pop-up after ticking something */
+  cheers: boolean;
   updatedAt: number;
 };
 
@@ -177,6 +179,7 @@ export function defaultSettings(): Settings {
     myDuas: [],
     iftarSeen: "",
     eidName: "",
+    cheers: true,
     updatedAt: Date.now(),
   };
 }

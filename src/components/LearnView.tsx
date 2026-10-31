@@ -10,6 +10,7 @@ import { DAYS, IFTAR_DUA, QADR_DUA } from "@/content/days";
 import { namesForDay } from "@/content/names";
 import { DuaCard, HadithBlock, VerseBlock } from "./DailyContent";
 import { CheckRow, Icon } from "./ui";
+import { useCheer } from "./Cheers";
 
 /** Deterministic shuffle so the right answer isn't always first, but stays put on re-render. */
 function order(n: number, seed: number) {
@@ -35,6 +36,7 @@ export default function LearnView({ now, day }: { now: Date; day: number }) {
   void days[date];
   const opts = useMemo(() => order(c.quiz.options.length, selected), [c, selected]);
   const names = namesForDay(selected);
+  const cheer = useCheer();
   const learnedSoFar = names[names.length - 1].index;
 
   // Quiz answers can be tried before the day arrives; they're kept in memory only.
@@ -76,7 +78,10 @@ export default function LearnView({ now, day }: { now: Date; day: number }) {
         dua={c.dua}
         learned={entry.duaLearned}
         disabled={!editable}
-        onLearned={() => updateDay(date, { duaLearned: !entry.duaLearned })}
+        onLearned={() => {
+          updateDay(date, { duaLearned: !entry.duaLearned });
+          if (!entry.duaLearned) cheer("c_dua");
+        }}
       />
 
       {selected >= 21 && selected !== 21 ? <DuaCard title={t("lastTenPinned")} dua={QADR_DUA} compact /> : null}
@@ -87,7 +92,10 @@ export default function LearnView({ now, day }: { now: Date; day: number }) {
         <p className="kicker">{t("lessonOfDay")}</p>
         <h2 style={{ fontSize: "1.25rem" }}>{c.lesson.title[lang]}</h2>
         <p className="lesson-body">{c.lesson.body[lang]}</p>
-        <CheckRow on={entry.lessonRead} disabled={!editable} onToggle={() => updateDay(date, { lessonRead: !entry.lessonRead })}>
+        <CheckRow on={entry.lessonRead} disabled={!editable} onToggle={() => {
+          updateDay(date, { lessonRead: !entry.lessonRead });
+          if (!entry.lessonRead) cheer("c_lesson");
+        }}>
           {t("markRead")}
         </CheckRow>
       </article>

@@ -15,7 +15,14 @@ export const metadata: Metadata = {
   description: "Track your fasts, prayers and Quran, learn a verse, a dua and a lesson every day of Ramadan. Works offline.",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, title: "Ramadan", statusBarStyle: "black-translucent" },
-  icons: { icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/icon-192.png", type: "image/png" }], apple: "/apple-touch-icon.png" },
+  icons: {
+    // "?v=2" makes browsers drop the old cached tab icon
+    icon: [
+      { url: "/favicon.ico?v=2", sizes: "16x16 32x32 48x48 64x64" },
+      { url: "/icon-192.png?v=2", type: "image/png", sizes: "192x192" },
+    ],
+    apple: "/apple-touch-icon.png?v=2",
+  },
 };
 
 export const viewport: Viewport = {
