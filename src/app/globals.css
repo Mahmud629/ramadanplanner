@@ -1,3 +1,20 @@
+/* Bangla digits (০–৯) only, cut from Noto Sans/Serif Bengali (SIL OFL), ~4 KB each.
+   Listed first in the font stack so every Bangla number uses them, while letters stay in Hind Siliguri. */
+@font-face {
+  font-family: "BN Digits";
+  src: url("./fonts/bn-digits-sans.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+09E6-09EF;
+}
+@font-face {
+  font-family: "BN Digits Serif";
+  src: url("./fonts/bn-digits-serif.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+  unicode-range: U+09E6-09EF;
+}
+
 :root,
 [data-theme="night"] {
   --bg: #0b2523;
@@ -56,7 +73,7 @@ body {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: "Hind Siliguri", system-ui, sans-serif;
+  font-family: "BN Digits", "Hind Siliguri", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
@@ -111,7 +128,7 @@ body {
   color: var(--gold);
 }
 .num {
-  font-family: "Fraunces Variable", "Hind Siliguri", serif;
+  font-family: "Fraunces Variable", "BN Digits Serif", "Hind Siliguri", serif;
   font-variant-numeric: tabular-nums lining-nums;
   font-variation-settings: "SOFT" 100, "WONK" 0;
 }

@@ -18,6 +18,7 @@ A Ramadan companion that works offline. Bangla first, with English as an option.
 
 - Quran text and translations come from [`quran-json`](https://github.com/risan/quran-json) (CC BY 4.0): Uthmani script from quranenc.com, Bangla by Muhiuddin Khan, English by Saheeh International, and transliteration from Tanzil. `npm run build:quran` extracts only the verses the app uses into `src/content/quran.generated.json`.
 - The daily content is in `src/content/days.ts` and the 99 Names are in `src/content/names.ts`. Hadith numbers follow Sunnah.com. Where the schools of fiqh differ, the lessons follow the Hanafi view.
+- Bangla digits use tiny digit-only cuts of Noto Sans Bengali and Noto Serif Bengali (SIL OFL) in `src/app/fonts/`.
 - Recitation is Mishary Alafasy, streamed from everyayah.com. Audio that has been played is cached for offline use.
 - Prayer times are calculated with [adhan-js](https://github.com/batoulapps/adhan-js). The start of Ramadan uses the Umm al-Qura calendar plus an adjustment, which is +1 by default for Bangladesh.
 
