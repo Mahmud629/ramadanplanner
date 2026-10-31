@@ -203,6 +203,13 @@ p {
   padding: 16px 0 6px;
   gap: 12px;
 }
+.app-logo {
+  display: block;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 0 0 1px var(--line);
+  flex-shrink: 0;
+}
 .brand {
   font-weight: 600;
   font-size: 0.95rem;

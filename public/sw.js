@@ -1,5 +1,5 @@
 // Ramadan Planner service worker: works offline after the first visit.
-const CACHE = "ramadan-planner-v3";
+const CACHE = "ramadan-planner-v4";
 const CORE = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (event) => {

@@ -109,7 +109,10 @@ function Shell() {
       <div className="shell">
         {tab === "today" ? (
           <header className="topbar">
-            <span className="brand">{t("appName")}</span>
+            <span className="brand row" style={{ gap: 10 }}>
+              <img src="/icon-192.png" alt="" width={32} height={32} className="app-logo" />
+              {t("appName")}
+            </span>
             <div className="row">
               <span className="dates muted">{longDate(rd.today, lang)}</span>
               <button
@@ -172,7 +175,8 @@ function Onboarding() {
     <div className="overlay" role="dialog" aria-modal="true" aria-labelledby="ob-title">
       <div className="sheet stack-lg">
         <div className="stack" style={{ gap: 8 }}>
-          <p className="ar gold" style={{ textAlign: "center", fontSize: "2rem", lineHeight: 1.8 }}>
+          <img src="/icon-192.png" alt={t("appName")} width={96} height={96} className="app-logo" style={{ alignSelf: "center", borderRadius: 24 }} />
+          <p className="ar gold" style={{ textAlign: "center", fontSize: "1.7rem", lineHeight: 1.8 }}>
             رَمَضَان مُبَارَك
           </p>
           <h1 id="ob-title" style={{ fontSize: "1.5rem", textAlign: "center" }}>

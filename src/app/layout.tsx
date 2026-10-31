@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "Track your fasts, prayers and Quran, learn a verse, a dua and a lesson every day of Ramadan. Works offline.",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, title: "Ramadan", statusBarStyle: "black-translucent" },
-  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
+  icons: { icon: [{ url: "/favicon.ico", sizes: "any" }, { url: "/icon-192.png", type: "image/png" }], apple: "/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
