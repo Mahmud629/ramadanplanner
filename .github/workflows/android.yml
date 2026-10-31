@@ -73,7 +73,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleRelease bundleRelease 2>&1 | tee ../gradle.log; test ${PIPESTATUS[0]} -eq 0
+          ./gradlew --no-daemon --stacktrace assembleRelease bundleRelease 2>&1 | tee ../gradle.log; test ${PIPESTATUS[0]} -eq 0
           mkdir -p ../dist
           cp app/build/outputs/apk/release/app-release.apk "../dist/RamadanPlanner-$VERSION_NAME.apk"
           cp app/build/outputs/bundle/release/app-release.aab "../dist/RamadanPlanner-$VERSION_NAME.aab"
@@ -83,7 +83,7 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug 2>&1 | tee ../gradle.log; test ${PIPESTATUS[0]} -eq 0
+          ./gradlew --no-daemon --stacktrace assembleDebug 2>&1 | tee ../gradle.log; test ${PIPESTATUS[0]} -eq 0
           mkdir -p ../dist
           cp app/build/outputs/apk/debug/app-debug.apk "../dist/RamadanPlanner-$VERSION_NAME-test.apk"
 
@@ -91,8 +91,11 @@ jobs:
         if: failure()
         run: |
           if [ -f gradle.log ]; then
-            msg=$(grep -E "error|What went wrong|FAILURE|Could not|> " gradle.log | tail -25 | sed ':a;N;$!ba;s/%/%25/g;s/\n/%0A/g')
-            echo "::error title=Gradle build failed::$msg"
+            enc() { sed ':a;N;$!ba;s/%/%25/g;s/\r//g;s/\n/%0A/g'; }
+            echo "::error title=Gradle what went wrong::$(grep -A12 'What went wrong' gradle.log | head -14 | enc)"
+            echo "::error title=Gradle where::$(grep -B2 -A6 '\* Where' gradle.log | head -10 | enc)"
+            echo "::error title=Gradle caused by::$(grep -E 'Caused by|^\s+at (com\.android|org\.gradle\.api|build_)' gradle.log | head -20 | enc)"
+            echo "::error title=Gradle tasks::$(grep -E '^> (Task|Configure)' gradle.log | tail -8 | enc)"
           fi
 
       - uses: actions/upload-artifact@v4
