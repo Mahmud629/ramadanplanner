@@ -95,11 +95,11 @@ button {
 }
 html {
   -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
 }
 body {
-  overflow-x: hidden;
-  overscroll-behavior-y: none;
+  /* "clip" hides sideways overflow without turning the page into its own scroll box,
+     which on Android stopped touch scrolling altogether */
+  overflow-x: clip;
 }
 :focus-visible {
   outline: 2px solid var(--gold);
