@@ -14,10 +14,12 @@ import { useInstall } from "@/lib/install";
 import { downloadIcs, ramadanIcs } from "@/lib/ics";
 import { saveFile } from "@/lib/native";
 import EidCard from "./EidCard";
+import Qibla from "./Qibla";
+import Trophies from "./Trophies";
 import { downloadCanvas, drawProgress, H, loadCardFonts, shareCanvas, W } from "@/lib/cardArt";
 import { MyDuas } from "./Moments";
 
-export type Sub = "tasbih" | "zakat" | "fitra" | "qada" | "recap" | "settings" | "backup" | "about" | "duas" | "eid" | "alarms";
+export type Sub = "tasbih" | "zakat" | "fitra" | "qada" | "recap" | "settings" | "backup" | "about" | "duas" | "eid" | "alarms" | "qibla" | "trophies";
 
 export default function MoreView({ now, initial }: { now: Date; initial?: Sub | null }) {
   const { t } = useStore();
@@ -33,6 +35,8 @@ export default function MoreView({ now, initial }: { now: Date; initial?: Sub | 
   if (sub === "backup") return <Backup onBack={back} />;
   if (sub === "about") return <About onBack={back} />;
   if (sub === "eid") return <EidCard now={now} onBack={back} />;
+  if (sub === "qibla") return <Qibla onBack={back} />;
+  if (sub === "trophies") return <Trophies now={now} onBack={back} />;
   if (sub === "duas")
     return (
       <div className="stack-lg">
@@ -50,10 +54,12 @@ export default function MoreView({ now, initial }: { now: Date; initial?: Sub | 
 
   const items: { id: Sub; icon: string; label: string }[] = [
     { id: "recap", icon: "star", label: t("recap") },
+    { id: "trophies", icon: "trophy", label: t("trophies") },
     { id: "duas", icon: "heart", label: t("myDuas") },
     { id: "alarms", icon: "bell", label: t("calendarAlarms") },
     { id: "eid", icon: "moon", label: t("eidCard") },
     { id: "tasbih", icon: "beads", label: t("tasbih") },
+    { id: "qibla", icon: "compass", label: t("qibla") },
     { id: "qada", icon: "calendar", label: t("qada") },
     { id: "fitra", icon: "gift", label: t("fitra") },
     { id: "zakat", icon: "scale", label: t("zakat") },

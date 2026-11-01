@@ -75,6 +75,7 @@ export default function LearnView({ now, day }: { now: Date; day: number }) {
 
       <DuaCard
         title={t("duaOfDay")}
+        shareTitle={t("duaCardTitle", { n: selected })}
         dua={c.dua}
         learned={entry.duaLearned}
         disabled={!editable}
@@ -84,7 +85,7 @@ export default function LearnView({ now, day }: { now: Date; day: number }) {
         }}
       />
 
-      {selected >= 21 && selected !== 21 ? <DuaCard title={t("lastTenPinned")} dua={QADR_DUA} compact /> : null}
+      {selected >= 21 && selected !== 21 ? <DuaCard title={t("lastTenPinned")} dua={QADR_DUA} compact shareTitle={t("qadrDuaTitle")} /> : null}
 
       <HadithBlock text={c.hadith.text[lang]} refText={hadithRef(c.hadith.ref, lang)} />
 
@@ -158,7 +159,7 @@ export default function LearnView({ now, day }: { now: Date; day: number }) {
           </span>
         </summary>
         <div className="fold-body">
-          <DuaCard title={t("iftarDua")} dua={IFTAR_DUA} />
+          <DuaCard title={t("iftarDua")} dua={IFTAR_DUA} shareTitle={t("iftarDua")} />
         </div>
       </details>
     </div>

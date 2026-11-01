@@ -521,6 +521,155 @@ export async function drawProgress(c: HTMLCanvasElement, o: ProgressOpts) {
   ctx.fillText(foot, W / 2, H - 62);
 }
 
+/* ---------------- Dua photocard ---------------- */
+
+export type DuaCardSize = "story" | "post";
+export type DuaCardOpts = { lang: Lang; size: DuaCardSize; title: string; ar: string; pron: string; meaning: string; ref: string };
+
+/** Split text into lines that fit `max` pixels with the current font. */
+function wrap(ctx: CanvasRenderingContext2D, text: string, max: number) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w;
+    if (ctx.measureText(next).width > max && cur) {
+      lines.push(cur);
+      cur = w;
+    } else cur = next;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+export async function drawDuaCard(c: HTMLCanvasElement, o: DuaCardOpts) {
+  const ctx = c.getContext("2d");
+  if (!ctx) return;
+  const story = o.size === "story";
+  const CW = 1080;
+  const CH = story ? 1920 : 1350;
+  c.width = CW;
+  c.height = CH;
+  const P = { ink: "#f1e7cf", soft: "rgba(241,231,207,0.72)", gold: "#e0b355", line: "rgba(241,231,207,0.16)" };
+  const bn = o.lang === "bn";
+  ctx.clearRect(0, 0, CW, CH);
+  ctx.textBaseline = "alphabetic";
+
+  const g = ctx.createLinearGradient(0, 0, 0, CH);
+  g.addColorStop(0, "#0d2c29");
+  g.addColorStop(1, "#071816");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, CW, CH);
+  // faint star pattern, strongest at the top
+  ctx.save();
+  ctx.strokeStyle = P.gold;
+  ctx.lineWidth = 1.4;
+  for (let y = 60; y < CH; y += 120) {
+    for (let x = (y / 120) % 2 ? 0 : 60; x < CW + 120; x += 120) {
+      ctx.globalAlpha = Math.max(0, 0.11 - (y / CH) * 0.1);
+      starPath(ctx, x, y, 34, 14);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+
+  // header: logo tile + app name
+  const top = story ? 150 : 80;
+  const logo = await loadImage("/icon-192.png");
+  if (logo) {
+    ctx.save();
+    rr(ctx, 80, top, 76, 76, 18);
+    ctx.clip();
+    ctx.drawImage(logo, 80, top, 76, 76);
+    ctx.restore();
+  }
+  ctx.textAlign = "left";
+  ctx.fillStyle = P.ink;
+  ctx.font = F.bn(600, 36);
+  ctx.fillText(bn ? "রমাদান প্ল্যানার" : "Ramadan Planner", 176, top + 50);
+
+  // measure the content so it can be centred vertically; scale everything down together until it fits
+  const maxW = CW - 200;
+  const room = CH - (top + 140) - (story ? 260 : 130);
+  const measure = (text: string, font: (px: number) => string, px: number, lh: number, rtl = false) => {
+    ctx.font = font(px);
+    ctx.direction = rtl ? "rtl" : "ltr";
+    const lines = wrap(ctx, text, maxW);
+    ctx.direction = "ltr";
+    return { px, lines, h: lines.length * px * lh };
+  };
+  let k = 1;
+  let titlePx = 38;
+  let ar = measure(o.ar, F.ar, 0, 1.95, true);
+  let pron = ar;
+  let mean = ar;
+  let gapScale = 1;
+  let total = 0;
+  for (; k >= 0.5; k -= 0.04) {
+    titlePx = Math.round(38 * Math.max(0.8, k));
+    ar = measure(o.ar, F.ar, Math.round((story ? 78 : 66) * k), 1.95, true);
+    pron = measure(o.pron, (px) => F.bn(400, px), Math.round((story ? 36 : 32) * k), 1.45);
+    mean = measure(o.meaning, (px) => F.bn(500, px), Math.round((story ? 42 : 36) * k), 1.5);
+    gapScale = Math.max(0.55, k);
+    total = titlePx + (60 + 56 + 12 + 44 + 50) * gapScale + ar.h + pron.h + mean.h + 32;
+    if (total <= room) break;
+  }
+  let y = top + 140 + Math.max(0, (room - total) / 2);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = P.gold;
+  ctx.font = F.bn(600, titlePx);
+  ctx.fillText(o.title, CW / 2, y + titlePx);
+  y += titlePx + 60 * gapScale;
+
+  ctx.fillStyle = P.gold;
+  ctx.font = F.ar(ar.px);
+  ctx.direction = "rtl";
+  for (const l of ar.lines) {
+    y += ar.px * 1.95;
+    ctx.fillText(l, CW / 2, y - ar.px * 0.55);
+  }
+  ctx.direction = "ltr";
+  y += 56 * gapScale;
+
+  // small star divider
+  ctx.strokeStyle = P.line;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(CW / 2 - 150, y - 28);
+  ctx.lineTo(CW / 2 - 24, y - 28);
+  ctx.moveTo(CW / 2 + 24, y - 28);
+  ctx.lineTo(CW / 2 + 150, y - 28);
+  ctx.stroke();
+  ctx.fillStyle = P.gold;
+  starPath(ctx, CW / 2, y - 28, 12, 5);
+  ctx.fill();
+  y += 12 * gapScale;
+
+  ctx.fillStyle = P.soft;
+  ctx.font = F.bn(400, pron.px);
+  for (const l of pron.lines) {
+    y += pron.px * 1.45;
+    ctx.fillText(l, CW / 2, y);
+  }
+  y += 44 * gapScale;
+  ctx.fillStyle = P.ink;
+  ctx.font = F.bn(500, mean.px);
+  for (const l of mean.lines) {
+    y += mean.px * 1.5;
+    ctx.fillText(l, CW / 2, y);
+  }
+  y += 50 * gapScale;
+  ctx.fillStyle = P.gold;
+  ctx.font = F.bn(400, Math.round(32 * Math.max(0.8, k)));
+  ctx.fillText(o.ref, CW / 2, y);
+
+  // footer
+  ctx.fillStyle = P.soft;
+  ctx.font = F.bn(400, 30);
+  ctx.fillText(bn ? "আমিন। দোয়ায় আমাদেরও রাখবেন।" : "Ameen. Remember us in your duas.", CW / 2, CH - (story ? 170 : 70));
+}
+
 /* ---------------- share / download ---------------- */
 
 function canvasBlob(c: HTMLCanvasElement) {

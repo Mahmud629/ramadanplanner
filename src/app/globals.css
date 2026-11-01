@@ -1123,6 +1123,103 @@ label.field {
   background: url("/logo-emblem.png") 50% 28% / 46% no-repeat, linear-gradient(#ffffff, #eef4ec);
 }
 
+.dua-canvas {
+  display: block;
+  margin: 0 auto;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.dua-canvas.story {
+  width: min(100%, calc((100dvh - 330px) * 9 / 16));
+}
+.dua-canvas.post {
+  width: min(100%, calc((100dvh - 330px) * 4 / 5));
+}
+
+/* trophy cabinet */
+.trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.trophy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 6px 12px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: transparent;
+  text-align: center;
+  min-width: 0;
+}
+.trophy.won {
+  background: var(--gold-soft);
+  border-color: transparent;
+}
+.trophy-title {
+  font-size: 0.82rem;
+  line-height: 1.3;
+  font-weight: 600;
+}
+.trophy:not(.won) .trophy-title {
+  color: var(--ink-3);
+}
+.medal {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px dashed var(--line-strong);
+  color: var(--ink-3);
+}
+.won .medal,
+.medal.won {
+  border: 0;
+  background: radial-gradient(circle at 35% 30%, #fff1c4, var(--gold));
+  color: var(--on-gold);
+  box-shadow: 0 6px 18px -6px var(--gold);
+}
+.medal.big {
+  width: 92px;
+  height: 92px;
+}
+.trophy-progress {
+  width: 70%;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--bg-deep);
+  overflow: hidden;
+}
+.trophy-progress > span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+/* qibla compass */
+.qibla {
+  width: min(320px, 84vw);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 50%;
+  transition: box-shadow 200ms ease;
+}
+.qibla.aligned {
+  box-shadow: 0 0 0 6px var(--leaf-soft), 0 0 60px -10px var(--leaf);
+}
+.qibla-status {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+.qibla-status.ok {
+  color: var(--leaf);
+}
+
 .sub-head {
   display: flex;
   align-items: center;

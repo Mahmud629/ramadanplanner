@@ -124,6 +124,26 @@ export function Icon({ name, size = 22 }: { name: string; size?: number }) {
           <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
         </svg>
       );
+    case "mat":
+      return (
+        <svg {...p}>
+          <path d="M6 21V8.5C6 5.5 8.7 3 12 3s6 2.5 6 5.5V21Z" />
+          <path d="M9 21v-9.5a3 3 0 0 1 6 0V21M4 21h16" />
+        </svg>
+      );
+    case "compass":
+      return (
+        <svg {...p}>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="m15.5 8.5-2.2 4.8-4.8 2.2 2.2-4.8Z" />
+        </svg>
+      );
+    case "trophy":
+      return (
+        <svg {...p}>
+          <path d="M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M9.5 17h5v3h-5z" />
+        </svg>
+      );
     case "share":
       return (
         <svg {...p}>

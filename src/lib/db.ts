@@ -89,6 +89,10 @@ export type Settings = {
   eidName: string;
   /** show the "Alhamdulillah" pop-up after ticking something */
   cheers: boolean;
+  /** milestone unlocks: "1448:juz1" → date unlocked */
+  trophies: Record<string, string>;
+  /** Hijri years whose existing progress has already been recorded without pop-ups */
+  trophyYears: number[];
   updatedAt: number;
 };
 
@@ -180,6 +184,8 @@ export function defaultSettings(): Settings {
     iftarSeen: "",
     eidName: "",
     cheers: true,
+    trophies: {},
+    trophyYears: [],
     updatedAt: Date.now(),
   };
 }

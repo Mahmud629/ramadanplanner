@@ -11,6 +11,7 @@ import LearnView from "./LearnView";
 import MoreView, { LocationPicker, type Sub } from "./MoreView";
 import { IftarMoment } from "./Moments";
 import { Cheers } from "./Cheers";
+import { MilestoneWatcher } from "./Trophies";
 import { playChime } from "@/lib/chime";
 import { setBarsStyle } from "@/lib/native";
 import { Icon, Toast } from "./ui";
@@ -170,6 +171,7 @@ function Shell() {
       {settings.analytics ? <Analytics /> : null}
       {toast ? <Toast text={toast} onDone={() => setToast(null)} /> : null}
       <Cheers />
+      <MilestoneWatcher now={now} />
     </>
   );
 }

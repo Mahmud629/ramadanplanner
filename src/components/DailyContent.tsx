@@ -6,6 +6,7 @@ import { digits } from "@/lib/i18n";
 import { arabicNumber, duaArabic, duaAudio, duaRef, hadithRef, surahName, verse } from "@/content";
 import type { Dua } from "@/content/types";
 import { AudioButton, ayahAudioUrl, CheckRow } from "./ui";
+import { DuaShareButton } from "./DuaShare";
 
 export function VerseBlock({ s, from, to }: { s: number; from: number; to: number }) {
   const { settings, t } = useStore();
@@ -48,6 +49,7 @@ export function DuaCard({
   onLearned,
   disabled,
   compact,
+  shareTitle,
 }: {
   title: string;
   dua: Dua | { ar: string; translit: string; bnPron: string; meaning: { en: string; bn: string }; ref: string };
@@ -55,6 +57,8 @@ export function DuaCard({
   onLearned?: () => void;
   disabled?: boolean;
   compact?: boolean;
+  /** title on the shareable photocard; omit to hide the share button */
+  shareTitle?: string;
 }) {
   const { settings, t } = useStore();
   const lang = settings.lang;
@@ -67,7 +71,10 @@ export function DuaCard({
     <div className="scroll stack" style={{ gap: 12 }}>
       <div className="between">
         <p className="kicker">{title}</p>
-        {audio ? <AudioButton id={`d-${audio[0].s}-${audio[0].a}`} urls={audio.map((x) => ayahAudioUrl(x.s, x.a))} /> : null}
+        <span className="row" style={{ gap: 8 }}>
+          {audio ? <AudioButton id={`d-${audio[0].s}-${audio[0].a}`} urls={audio.map((x) => ayahAudioUrl(x.s, x.a))} /> : null}
+          {shareTitle ? <DuaShareButton content={{ title: shareTitle, ar, translit: dua.translit, bnPron: dua.bnPron, meaning: dua.meaning, ref }} /> : null}
+        </span>
       </div>
       <p className="ar gold" lang="ar" style={{ fontSize: compact ? "1.5rem" : "1.85rem" }}>
         {ar}

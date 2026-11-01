@@ -8,11 +8,12 @@ import { dayIndexFor, hijriParts, HIJRI_MONTHS, longDate } from "@/lib/ramadan";
 import { AVOIDS, DEEDS, EXTRAS, FARD, type ExcuseReason, type FastStatus } from "@/lib/db";
 import { dayScore, pagesPerDay, ramadanScore } from "@/lib/score";
 import { digits } from "@/lib/i18n";
-import { contentForDay, duaArabic } from "@/content";
+import { contentForDay, duaArabic, duaRef } from "@/content";
 import { IFTAR_DUA } from "@/content/days";
 import Moon from "./Moon";
 import { DuaCard } from "./DailyContent";
 import { NightPlan } from "./Moments";
+import { DuaShareButton } from "./DuaShare";
 import { useCheer } from "./Cheers";
 import { Check, CheckRow, Chip, Icon, tap } from "./ui";
 
@@ -132,7 +133,7 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
           </button>
         </div>
       ) : iftarSoon ? (
-        <DuaCard title={t("iftarDua")} dua={IFTAR_DUA} />
+        <DuaCard title={t("iftarDua")} dua={IFTAR_DUA} shareTitle={t("iftarDua")} />
       ) : night ? (
         <button className="notice gold night-card" onClick={() => setNightOpen(true)}>
           <span className="row" style={{ gap: 10, textAlign: "left" }}>
@@ -259,10 +260,15 @@ export default function TodayView({ now, viewDate, onBackToToday, onOpenLearn, o
           }}>
             {t("learned")}
           </CheckRow>
-          <button className="btn small" onClick={onOpenLearn}>
-            {t("openJourney")}
-            <Icon name="chev" size={16} />
-          </button>
+          <span className="row" style={{ gap: 8 }}>
+            <DuaShareButton
+              content={{ title: t("duaCardTitle", { n: contentDay }), ar: duaArabic(c.dua), translit: c.dua.translit, bnPron: c.dua.bnPron, meaning: c.dua.meaning, ref: duaRef(c.dua, lang) }}
+            />
+            <button className="btn small" onClick={onOpenLearn}>
+              {t("openJourney")}
+              <Icon name="chev" size={16} />
+            </button>
+          </span>
         </div>
       </section>
 
